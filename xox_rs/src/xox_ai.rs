@@ -8,7 +8,7 @@ enum Player {
 }
 
 #[pyfunction]
-fn get_best_move(board: Vec<i32>) -> usize {
+pub fn get_best_move(board: Vec<i32>) -> usize {
     let mut board_internal = [Player::Empty; 9];
     for (i, &v) in board.iter().enumerate() {
         board_internal[i] = match v {
@@ -40,12 +40,17 @@ fn is_draw(board: &[Player; 9]) -> bool {
     board.iter().all(|&x| x != Player::Empty)
 }
 
-fn minimax(board: &mut [Player; 9], is_maximizing: bool) -> i32 {
+fn calc_minimax_value(depth: i32) -> i32 {
+    100000 / 10i32.pow((depth.min(5) - 1) as u32)
+}
+
+fn minimax(board: &mut [Player; 9], is_maximizing: bool, depth: i32) -> i32 {
     if is_winner(board, Player::AI) {
-        return 1;
+        return calc_minimax_value(depth);
     }
     if is_winner(board, Player::Human) {
-        return -1;
+        let score = calc_minimax_value(depth - 1);
+        return if is_maximizing { -score } else { score };
     }
     if is_draw(board) {
         return 0;
@@ -60,7 +65,7 @@ fn minimax(board: &mut [Player; 9], is_maximizing: bool) -> i32 {
             } else {
                 Player::Human
             };
-            let score = minimax(board, !is_maximizing);
+            let score = minimax(board, !is_maximizing, depth + 1);
             board[i] = Player::Empty;
 
             if is_maximizing {
@@ -81,7 +86,7 @@ fn best_move(board: &mut [Player; 9]) -> usize {
     for i in 0..9 {
         if board[i] == Player::Empty {
             board[i] = Player::AI;
-            let score = minimax(board, false);
+            let score = minimax(board, false, 1);
             board[i] = Player::Empty;
 
             if score > best_score {
