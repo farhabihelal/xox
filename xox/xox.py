@@ -1,7 +1,8 @@
+import random
 from abc import ABC
 from enum import Enum
-from pydantic import BaseModel
 
+from pydantic import BaseModel
 from xox_ai_utils import XoxAI
 
 
@@ -26,14 +27,8 @@ class Board:
         self.configure(config)
 
     def configure(self, config: Config):
+        self.config = config
         self.grid = [[" " for _ in range(3)] for _ in range(3)]
-
-    # def display(self):
-    #     print("\n  0   1   2")
-    #     for idx, row in enumerate(self.grid):
-    #         print(f"{idx} " + " | ".join(row))
-    #         if idx < 2:
-    #             print("  " + "-" * 9)
 
     def update_cell(self, row: int, col: int, symbol: str):
         if self.grid[row][col] == " ":
@@ -74,7 +69,11 @@ class Game(ABC):
 
         self.board: Board = None
         self.ai: XoxAI = None
+
         self.current_player_idx: int = None
+        self.current_player: Player = None
+
+        self.reset()
 
     def configure(self, config: Config):
         self.config = config
@@ -82,14 +81,16 @@ class Game(ABC):
 
     def switch_player(self):
         self.current_player_idx = 1 - self.current_player_idx
+        self.current_player = self.players[self.current_player_idx]
 
     def play(self):
-        self.reset_game()
+        self.reset()
 
-    def reset_game(self):
+    def reset(self):
         self.board = Board(Board.Config())
         self.ai = XoxAI(XoxAI.Config())
-        self.current_player_idx = 0
+        self.current_player_idx = random.randint(0, len(self.players) - 1)
+        self.current_player = self.players[self.current_player_idx]
 
     def get_ai_move(self) -> tuple:
         board = [
@@ -127,7 +128,7 @@ if __name__ == "__main__":
     config = Game.Config(players=players)
     game = Game(config)
 
-    game.reset_game()
+    game.reset()
 
     game.board.grid = [
         ["O", " ", "O"],

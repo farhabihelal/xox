@@ -1,17 +1,15 @@
-import os
-import sys
 import logging
-from typing import List, Optional
+import os
 import random
+import sys
+from typing import List
 
+from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from pydantic import BaseModel
-
-
-from xox import Game, Player, Board
+from xox import Board, Game, Player
 
 console = Console()
 
