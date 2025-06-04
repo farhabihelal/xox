@@ -58,6 +58,9 @@ class Board:
             return True
         return False
 
+    def is_empty(self, row: int, col: int) -> bool:
+        return self.grid[row][col] == " "
+
 
 class Game(ABC):
     class Config(BaseModel):
@@ -127,7 +130,7 @@ if __name__ == "__main__":
     game.reset_game()
 
     game.board.grid = [
-        [" ", "O", "O"],
+        ["O", " ", "O"],
         [" ", " ", " "],
         ["X", " ", "X"],
     ]
