@@ -1,3 +1,8 @@
+use rand::rng;
+use rand::seq::IteratorRandom;
+use std::collections::HashSet;
+use std::usize;
+
 use pyo3::prelude::*;
 
 #[derive(Copy, Clone, PartialEq)]
@@ -17,7 +22,9 @@ pub fn get_best_move(board: Vec<i32>) -> usize {
             _ => Player::Empty,
         };
     }
-
+    // println!("[ original board ]");
+    // display_board(&board_internal);
+    // println!("\n");
     best_move(&mut board_internal)
 }
 
@@ -41,7 +48,7 @@ fn is_draw(board: &[Player; 9]) -> bool {
 }
 
 fn calc_minimax_value(depth: i32) -> i32 {
-    100000 / 10i32.pow((depth.min(5) - 1) as u32)
+    10_000_000 / 10i32.pow((depth.min(5)) as u32)
 }
 
 fn minimax(board: &mut [Player; 9], is_maximizing: bool, depth: i32) -> i32 {
@@ -49,7 +56,7 @@ fn minimax(board: &mut [Player; 9], is_maximizing: bool, depth: i32) -> i32 {
         return calc_minimax_value(depth);
     }
     if is_winner(board, Player::Human) {
-        let score = calc_minimax_value(depth - 1);
+        let score = calc_minimax_value(depth) - 1;
         return if is_maximizing { -score } else { score };
     }
     if is_draw(board) {
@@ -57,6 +64,7 @@ fn minimax(board: &mut [Player; 9], is_maximizing: bool, depth: i32) -> i32 {
     }
 
     let mut best_score = if is_maximizing { i32::MIN } else { i32::MAX };
+    // let mut best_depth: i32 = i32::MAX;
 
     for i in 0..9 {
         if board[i] == Player::Empty {
@@ -65,14 +73,33 @@ fn minimax(board: &mut [Player; 9], is_maximizing: bool, depth: i32) -> i32 {
             } else {
                 Player::Human
             };
+            // debug
+            // if is_maximizing {
+            //     println!("AI played: {},{}", i / 3, i % 3);
+            // } else {
+            //     println!("Human played: {},{}", i / 3, i % 3);
+            // }
+            // display_board(board, i / 3, i % 3);
             let score = minimax(board, !is_maximizing, depth + 1);
+
+            // println!("------------------------------");
+            // println!("Score={score}\nDepth={depth}");
+            // println!("------------------------------");
+
             board[i] = Player::Empty;
 
-            if is_maximizing {
-                best_score = best_score.max(score);
+            let is_better = if is_maximizing {
+                score > best_score
             } else {
-                best_score = best_score.min(score);
+                score < best_score
+            };
+
+            if is_better {
+                best_score = score;
+                // best_depth = depth;
+                // println!("Best score updated to {best_score}.\n")
             }
+            // println!("\n");
         }
     }
 
@@ -81,22 +108,67 @@ fn minimax(board: &mut [Player; 9], is_maximizing: bool, depth: i32) -> i32 {
 
 fn best_move(board: &mut [Player; 9]) -> usize {
     let mut best_score = i32::MIN;
-    let mut move_index = 0;
+    let mut candidate_indices: HashSet<usize> = HashSet::new();
 
     for i in 0..9 {
         if board[i] == Player::Empty {
             board[i] = Player::AI;
+
+            // println!("------------------------------");
+            // println!("[ FINDING BEST AI MOVE ]");
+            // println!("------------------------------\n\n");
+            // println!("AI played: {},{}", i / 3, i % 3);
+            // display_board(board, i / 3, i % 3);
             let score = minimax(board, false, 1);
+
+            // println!("###############################");
+            // println!("Score={score}");
+            // println!("###############################\n\n");
+
             board[i] = Player::Empty;
 
             if score > best_score {
                 best_score = score;
-                move_index = i;
+                candidate_indices.clear();
+                candidate_indices.insert(i);
+                // println!("New Best score={best_score}.\n")
+            } else if score == best_score {
+                candidate_indices.insert(i);
             }
+
+            // println!("\n\n\n\n\n\n\n\n\n");
         }
     }
 
-    move_index
+    candidate_indices.into_iter().choose(&mut rng()).unwrap()
+}
+
+fn display_board(board: &[Player; 9], mark_row: usize, mark_col: usize) {
+    println!("   0   1   2");
+    for row in 0..3 {
+        print!("{} ", row);
+        for col in 0..3 {
+            let i = row * 3 + col;
+            let symbol = match board[i] {
+                Player::Human => "X",
+                Player::AI => "O",
+                Player::Empty => " ",
+            };
+            if row == mark_row && col == mark_col {
+                print!("<{}>", symbol);
+            } else {
+                print!(" {} ", symbol);
+            }
+            if col != 2 {
+                print!("|");
+            }
+        }
+        println!();
+        if row != 2 {
+            println!("  ---+---+---");
+        }
+    }
+    println!();
 }
 
 #[pymodule]
