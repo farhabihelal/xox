@@ -1,10 +1,5 @@
-import logging
-import os
 import random
-import sys
-from typing import List
 
-from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
@@ -93,32 +88,6 @@ class XoxCLI(Game):
             except Exception as e:
                 pass
         print("Thanks for playing!")
-
-    # def display_board(self):
-    #     print("\n  0   1   2")
-    #     for idx, row in enumerate(self.board.grid):
-    #         print(f"{idx} " + " | ".join(row))
-    #         if idx < 2:
-    #             print("  " + "-" * 9)
-
-    # def display_board(self):
-    #     table = Table(show_header=False, show_lines=True, border_style="grey50")
-    #     for _ in range(3):
-    #         table.add_column(justify="center", width=3)
-    #     for row in self.board.grid:
-    #         rich_row = []
-    #         for cell in row:
-    #             if cell == "X":
-    #                 token = Text("X", style="bold red", justify="center")
-    #             elif cell == "O":
-    #                 token = Text("O", style="bold blue", justify="center")
-    #             else:
-    #                 token = Text(" " * 3, justify="center")
-    #             # Stretch the token based on cell_size
-    #             content = "\n".join([token.plain])
-    #             rich_row.append(Text(content, style=token.style))
-    #         table.add_row(*rich_row)
-    #     console.print(table)
 
     def display_board(self):
         table = Table(show_header=True, show_lines=True, border_style="grey50")

@@ -22,9 +22,7 @@ pub fn get_best_move(board: Vec<i32>) -> usize {
             _ => Player::Empty,
         };
     }
-    // println!("[ original board ]");
-    // display_board(&board_internal);
-    // println!("\n");
+
     best_move(&mut board_internal)
 }
 
@@ -64,7 +62,6 @@ fn minimax(board: &mut [Player; 9], is_maximizing: bool, depth: i32) -> i32 {
     }
 
     let mut best_score = if is_maximizing { i32::MIN } else { i32::MAX };
-    // let mut best_depth: i32 = i32::MAX;
 
     for i in 0..9 {
         if board[i] == Player::Empty {
@@ -73,18 +70,8 @@ fn minimax(board: &mut [Player; 9], is_maximizing: bool, depth: i32) -> i32 {
             } else {
                 Player::Human
             };
-            // debug
-            // if is_maximizing {
-            //     println!("AI played: {},{}", i / 3, i % 3);
-            // } else {
-            //     println!("Human played: {},{}", i / 3, i % 3);
-            // }
-            // display_board(board, i / 3, i % 3);
-            let score = minimax(board, !is_maximizing, depth + 1);
 
-            // println!("------------------------------");
-            // println!("Score={score}\nDepth={depth}");
-            // println!("------------------------------");
+            let score = minimax(board, !is_maximizing, depth + 1);
 
             board[i] = Player::Empty;
 
@@ -96,10 +83,7 @@ fn minimax(board: &mut [Player; 9], is_maximizing: bool, depth: i32) -> i32 {
 
             if is_better {
                 best_score = score;
-                // best_depth = depth;
-                // println!("Best score updated to {best_score}.\n")
             }
-            // println!("\n");
         }
     }
 
@@ -114,16 +98,7 @@ fn best_move(board: &mut [Player; 9]) -> usize {
         if board[i] == Player::Empty {
             board[i] = Player::AI;
 
-            // println!("------------------------------");
-            // println!("[ FINDING BEST AI MOVE ]");
-            // println!("------------------------------\n\n");
-            // println!("AI played: {},{}", i / 3, i % 3);
-            // display_board(board, i / 3, i % 3);
             let score = minimax(board, false, 1);
-
-            // println!("###############################");
-            // println!("Score={score}");
-            // println!("###############################\n\n");
 
             board[i] = Player::Empty;
 
@@ -131,44 +106,13 @@ fn best_move(board: &mut [Player; 9]) -> usize {
                 best_score = score;
                 candidate_indices.clear();
                 candidate_indices.insert(i);
-                // println!("New Best score={best_score}.\n")
             } else if score == best_score {
                 candidate_indices.insert(i);
             }
-
-            // println!("\n\n\n\n\n\n\n\n\n");
         }
     }
 
     candidate_indices.into_iter().choose(&mut rng()).unwrap()
-}
-
-fn display_board(board: &[Player; 9], mark_row: usize, mark_col: usize) {
-    println!("   0   1   2");
-    for row in 0..3 {
-        print!("{} ", row);
-        for col in 0..3 {
-            let i = row * 3 + col;
-            let symbol = match board[i] {
-                Player::Human => "X",
-                Player::AI => "O",
-                Player::Empty => " ",
-            };
-            if row == mark_row && col == mark_col {
-                print!("<{}>", symbol);
-            } else {
-                print!(" {} ", symbol);
-            }
-            if col != 2 {
-                print!("|");
-            }
-        }
-        println!();
-        if row != 2 {
-            println!("  ---+---+---");
-        }
-    }
-    println!();
 }
 
 #[pymodule]
